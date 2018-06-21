@@ -1,4 +1,8 @@
 import React from 'react'
+import ModifiedDragPiece from './dragFactory'
+
+console.log(ModifiedDragPiece, 'what is this?')
+
 
 class mrDrag extends React.Component{
     constructor(props){
@@ -23,12 +27,12 @@ class mrDrag extends React.Component{
         //if(moveY+event.target.getBoundingClientRect().height<=event.target.parentElement.clientHeight && moveY>=0) stateObject.top = moveY
         //if(moveX+event.target.getBoundingClientRect().width<=event.target.parentElement.clientWidth && moveX>=0) stateObject.left = moveX
 
-        const left = moveX < 0 ? 0 : Math.min(moveX, event.target.parentElement.clientWidth - event.target.getBoundingClientRect().width)
-        const top = moveY < 0 ? 0 : Math.min(moveY, event.target.parentElement.clientHeight - event.target.getBoundingClientRect().height)
+        const left = moveX < 0 ? 0 : Math.min(moveX, event.target.offsetParent.clientWidth - event.target.getBoundingClientRect().width)
+        const top = moveY < 0 ? 0 : Math.min(moveY, event.target.offsetParent.clientHeight - event.target.getBoundingClientRect().height)
          
         if((event.clientX || event.clientY)) this.setState({left, top})
 
-        this.props.providedCB('providedCB', this.state.left,this.state.top)
+        this.props.providedCB('providedCB', this.state.diffY)
     }
   
     handleDragStart(event){
@@ -39,10 +43,13 @@ class mrDrag extends React.Component{
 
     render(){
         return(
+            <div>
             <div draggable style={{borderWidth: '10px', borderStyle: 'solid', borderImage: 'repeating-linear-gradient(to right, #e66465, #9198e5) 30 20 / 1 1', backgroundColor: 'whitesmoke', position:'absolute', top:this.state.top, left: this.state.left}}
                 onDragStart={this.handleDragStart} onDrag={this.handleDrag}
             >
                 Drag me!
+            </div>
+            <ModifiedDragPiece/>
             </div>
         )
     }

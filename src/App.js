@@ -49,7 +49,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div style={{height: 600, width: 600, backgroundColor: 'palegreen', position: 'absolute', zIndex: -2, border: '5px solid plum', top: 50, left: 50}}         >
+        <div id='bowlingGreen' style={{height: 600, width: 600, backgroundColor: 'palegreen', position: 'absolute', zIndex: -2, border: '5px solid plum', top: 50, left: 50}}         >
         <span onClick={(evt)=>{evt.preventDefault(); this.shake(this.alert)}}>HELLO</span>
         
 
