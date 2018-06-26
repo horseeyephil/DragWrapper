@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import DragPiece from './DragPiece'
 
+import perimeterFinderUtility from './utilityReduce'
+
 const dragMaker = (providedPosition, providedCB) => {
 
     const dragFunction = providedPosition === 'fixed' ? (
@@ -9,30 +11,25 @@ const dragMaker = (providedPosition, providedCB) => {
             const moveY = event.clientY - this.state.diffY
             const moveX = event.clientX - this.state.diffX
             
-            const left = moveX < 0 ? 0 - event.target.children[0].offsetLeft : Math.min(moveX, window.innerWidth - event.target.getBoundingClientRect().width )
-            const top = moveY < 0 - event.target.offsetTop ? 0 - event.target.children[1].offsetTop : Math.min(moveY, window.innerHeight - event.target.getBoundingClientRect().height)
-            
-            if((event.clientX || event.clientY)) {console.log('time to set ', left, top); event.target.style.top = top+'px'; event.target.style.left = left+'px' 
+            if((event.clientX || event.clientY)){ event.target.style.top = moveY+'px'; event.target.style.left = moveX+'px' 
             }
-    
             providedCB('providedCB', event.target.clientWidth)
         })
 
     :   function(event) {
 
-
         const moveY = event.clientY - this.state.diffY
         const moveX = event.clientX - this.state.diffX
 
-        const left = moveX < 0 - event.target.children[0].offsetLeft ? 0 - event.target.children[0].offsetLeft : Math.min(moveX, event.target.offsetParent.clientWidth - event.target.getBoundingClientRect().width )
-        const top = moveY < 0 - event.target.children[1].offsetTop ? 0 - event.target.children[1].offsetTop : Math.min(moveY, event.target.offsetParent.clientHeight - event.target.getBoundingClientRect().height)
+        const left = moveX < this.cachedPerimeters.leftFence ? this.cachedPerimeters.leftFence : Math.min(moveX, event.target.offsetParent.clientWidth - this.cachedPerimeters.rightFence )//+ this.furthestObject.furthestRight.offsetLeft))
+        const top = moveY < this.cachedPerimeters.topFence ? this.cachedPerimeters.topFence : Math.min(moveY, event.target.offsetParent.clientHeight - this.cachedPerimeters.bottomFence )//+ this.furthestObject.furthestBottom.offsetTop))
         
-        if((event.clientX || event.clientY)) {console.log('time to set ', left, top); event.target.style.top = top+'px'; event.target.style.left = left+'px' 
+        if((event.clientX || event.clientY)) {event.target.style.top = top+'px'; event.target.style.left = left+'px' 
         }
 
         providedCB('providedCB', event.target.clientWidth)
     }
-        
+
    ////////// 
 
     return (WrappedComponent) => {
@@ -46,49 +43,49 @@ const dragMaker = (providedPosition, providedCB) => {
                 left: null,
                 diffX: null,
                 diffY: null,
-                hasBeenDragged: false
+                hasBeenDragged: false,
+                furthestMembers: null
             }
-            this.handleDrag = this.handleDrag.bind(this)
-            this.handleDragStart = this.handleDragStart.bind(this)
+
             this.dragFunction = dragFunction.bind(this)
-        }
-
-
-        handleDragStart(event){
-      
-            console.log('You started a drag!', event.target)
-          this.setState({diffX: event.clientX - event.target.offsetLeft, diffY: event.clientY - event.target.offsetTop})
-          return false
-        }
-
-        handleDrag(event){
-  
-            const moveY = event.clientY - this.state.diffY
-            const moveX = event.clientX - this.state.diffX
-            //if(moveY+event.target.getBoundingClientRect().height<=event.target.parentElement.clientHeight && moveY>=0) stateObject.top = moveY
-            //if(moveX+event.target.getBoundingClientRect().width<=event.target.parentElement.clientWidth && moveX>=0) stateObject.left = moveX
-            const left = moveX < 0 ? 0 : Math.min(moveX, event.target.offsetParent.clientWidth - event.target.getBoundingClientRect().width)
-            const top = moveY < 0 ? 0 : Math.min(moveY, event.target.offsetParent.clientHeight - event.target.getBoundingClientRect().height)
-             
-            if((event.clientX || event.clientY)) this.setState({left, top})
-    
-            providedCB('providedCB', event.target.clientWidth)
         }
 
         componentDidMount(){
 
             const theNode = ReactDOM.findDOMNode(this.myRef)
-            console.log('findDom', theNode)
+
+            // if(theNode.children.length) {
+                
+            //     const perimeters = perimeterFinderUtility(theNode.children)
+
+            //     this.cachedPerimeters = 
+            //         {leftFence: perimeters.furthestLeft.offsetLeft || 0,
+            //         rightFence: theNode.offsetParent.clientWidth - perimeters.furthestRight.getBoundingClientRect().width,
+            //         topFence: 0 - perimeters.furthestTop.offsetTop,
+            //         bottomFence: theNode.offsetParent.clientHeight - perimeters.furthestBottom.getBoundingClientRect().height
+            //         }
+            // }
+
+            // else {
+                this.cachedPerimeters = 
+                    {leftFence: 0,
+                    rightFence: theNode.getBoundingClientRect().width,
+                    topFence: 0,
+                    bottomFence: theNode.getBoundingClientRect().height,
+                    }
+            //}
+
 
             theNode.setAttribute('draggable', true)
             theNode.addEventListener('drag', this.dragFunction)
             
             theNode.addEventListener('dragstart', event=>{
+
                 if(!this.state.hasBeenDragged){
                     theNode.style.position = providedPosition
                     this.setState({hasBeenDragged:true})
                 }
-                console.log('You started a drag!', event.target.offsetLeft)
+
                 this.setState({diffX: event.clientX - event.target.offsetLeft , diffY: event.clientY - event.target.offsetTop})
                 return false
             })
@@ -105,6 +102,8 @@ const dragMaker = (providedPosition, providedCB) => {
     )
 }
 }
+
+
 
 export default dragMaker('absolute', console.log)(DragPiece)
 
